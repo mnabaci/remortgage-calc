@@ -63,7 +63,16 @@ export default function RemortgageCalculator() {
 
           <div className="lg:col-span-8 space-y-6">
             <OverviewCards stats={stats} purchasePrice={purchasePrice} />
-            <SummaryPanel stats={stats} futureValuation={futureValuation} />
+            <SummaryPanel
+              stats={stats}
+              futureValuation={futureValuation}
+              monthlyOverpayment={monthlyOverpayment}
+              purchasePrice={purchasePrice}
+              deposit={deposit}
+              termYears={termYears}
+              interestRate={interestRate}
+              fixTermYears={fixTermYears}
+            />
             <RepaymentTable
               schedule={repaymentSchedule}
               monthlyPayment={stats.monthlyPayment}

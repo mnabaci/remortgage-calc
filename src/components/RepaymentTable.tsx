@@ -65,7 +65,7 @@ export default function RepaymentTable({
     <SectionCard
       title="Repayment schedule"
       titleSuffix={
-        <div className="rounded-3xl bg-slate-800 px-4 py-3 text-white border border-slate-700">
+        <div className="rounded-3xl bg-slate-800 px-5 py-4 text-white border border-slate-700">
           <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Fixed monthly payment</p>
           <p className="text-lg font-semibold mt-1">{currency(monthlyPayment)}</p>
         </div>

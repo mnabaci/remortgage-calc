@@ -1,24 +1,58 @@
 import type { StaticStats } from "../types/mortgage";
 import SectionCard from "./ui/SectionCard";
+import GoalStatusCard from "./ui/GoalStatusCard";
+import { calculateRequiredMonthlyOverpaymentForLTV } from "../lib/mortgage";
+import type { MortgageInput } from "../types/mortgage";
 
 type Props = {
   stats: StaticStats;
   futureValuation: number;
+  monthlyOverpayment: number;
+  purchasePrice: number;
+  deposit: number;
+  termYears: number;
+  interestRate: number;
+  fixTermYears: number;
 };
 
-export default function SummaryPanel({ stats, futureValuation }: Props) {
+export default function SummaryPanel({
+  stats,
+  futureValuation,
+  monthlyOverpayment,
+  purchasePrice,
+  deposit,
+  termYears,
+  interestRate,
+  fixTermYears,
+}: Props) {
   const ltvClass =
-    stats.futureLTV > 90
-      ? "text-rose-300"
-      : stats.futureLTV > 85
-      ? "text-cyan-200"
-      : "text-emerald-300";
+    stats.futureLTV <= 90
+      ? "text-emerald-300"
+      : stats.futureLTV <= 96
+      ? "text-amber-300"
+      : "text-rose-300";
+
+  const cashTopUpFor90 = Math.max(0, stats.remainingBalance - futureValuation * 0.9);
+  const cashTopUpFor95 = Math.max(0, stats.remainingBalance - futureValuation * 0.95);
+
+  const baselineInputs: MortgageInput = {
+    purchasePrice,
+    deposit,
+    termYears,
+    interestRate,
+    fixTermYears,
+    futureValuation,
+    monthlyOverpayment: 0,
+  };
+
+  const requiredMonthlyOverpayment90 = calculateRequiredMonthlyOverpaymentForLTV(baselineInputs, 90);
+  const requiredMonthlyOverpayment95 = calculateRequiredMonthlyOverpaymentForLTV(baselineInputs, 95);
 
   return (
     <SectionCard
       title="Fixed rate position"
       titleSuffix={
-        <div className="rounded-3xl bg-slate-900/90 px-4 py-3 text-right border border-slate-800">
+        <div className="rounded-3xl bg-slate-900/90 px-5 py-4 text-right border border-slate-800">
           <p className="text-xs uppercase text-slate-500">Projected LTV</p>
           <p className={`text-4xl font-bold ${ltvClass}`}>{stats.futureLTV.toFixed(1)}%</p>
         </div>
@@ -45,25 +79,27 @@ export default function SummaryPanel({ stats, futureValuation }: Props) {
         </div>
       </div>
 
-      <div className="mt-6 rounded-3xl bg-slate-900/90 border border-slate-800 p-5">
-        {stats.futureLTV > 90 ? (
-          <>
-            <p className="text-sm font-semibold text-rose-200 mb-2">90% LTV warning</p>
-            <p className="text-sm text-rose-100">
-              Your projected LTV is above 90%. If your valuation is lower than expected, your remortgage options may move into a more expensive tier.
-            </p>
-            <p className="mt-4 text-2xl font-semibold text-white">
-              Top-up to 90%: {stats.currency(stats.cashTopUpFor90)}
-            </p>
-          </>
-        ) : (
-          <>
-            <p className="text-sm font-semibold text-cyan-200 mb-2">Healthy LTV</p>
-            <p className="text-sm text-cyan-100">
-              Your remortgage position is in a stronger bracket than the 95% market, which should leave you with better pricing and product choice.
-            </p>
-          </>
-        )}
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <GoalStatusCard
+          title="Goal: stay below 95% LTV"
+          currentLTV={stats.futureLTV}
+          targetLTV={95}
+          topUpAmount={cashTopUpFor95}
+          currentMonthlyOverpayment={monthlyOverpayment}
+          requiredMonthlyOverpayment={requiredMonthlyOverpayment95}
+          currency={stats.currency}
+          description="This target keeps you out of the most constrained remortgage tier."
+        />
+        <GoalStatusCard
+          title="Goal: stay below 90% LTV"
+          currentLTV={stats.futureLTV}
+          targetLTV={90}
+          topUpAmount={cashTopUpFor90}
+          currentMonthlyOverpayment={monthlyOverpayment}
+          requiredMonthlyOverpayment={requiredMonthlyOverpayment90}
+          currency={stats.currency}
+          description="This target aims for a stronger remortgage position with better pricing options."
+        />
       </div>
     </SectionCard>
   );

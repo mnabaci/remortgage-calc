@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { ChangeEventHandler } from "react";
 
 type Props = {
@@ -21,8 +22,20 @@ export default function InputField({
   helpText,
   className = "",
 }: Props) {
+  const [displayValue, setDisplayValue] = useState(() => String(value));
+
+  useEffect(() => {
+    const normalized = String(value);
+    if (normalized !== displayValue) {
+      setDisplayValue(normalized);
+    }
+  }, [displayValue, value]);
+
   const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    const parsed = Number(event.target.value);
+    const rawValue = event.target.value;
+    const sanitizedValue = rawValue.replace(/^0+(?=\d)/, "") || "0";
+    setDisplayValue(sanitizedValue);
+    const parsed = Number(sanitizedValue);
     onChange(Number.isNaN(parsed) ? 0 : Math.max(min, parsed));
   };
 
@@ -33,7 +46,7 @@ export default function InputField({
         type={type}
         min={min}
         step={step}
-        value={value}
+        value={displayValue}
         onChange={handleChange}
         className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100 outline-none transition focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500/20"
       />

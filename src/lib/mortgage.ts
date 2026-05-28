@@ -13,6 +13,39 @@ export function generateCurrencyFormatter() {
   return (value: number) => formatter.format(value);
 }
 
+export function calculateRequiredMonthlyOverpaymentForLTV(
+  inputs: MortgageInput,
+  targetLTV: number
+): number {
+  const getLTV = (overpayment: number) =>
+    buildRepaymentSchedule({ ...inputs, monthlyOverpayment: overpayment }).stats.futureLTV;
+
+  const initialLTV = getLTV(0);
+
+  if (initialLTV <= targetLTV) {
+    return 0;
+  }
+
+  let low = 0;
+  let high = Math.max(1, inputs.monthlyOverpayment, (inputs.purchasePrice - inputs.deposit) / Math.max(1, inputs.fixTermYears * 12));
+
+  while (getLTV(high) > targetLTV && high < 100000) {
+    high *= 2;
+  }
+
+  for (let i = 0; i < 60; i += 1) {
+    const mid = (low + high) / 2;
+    const ltv = getLTV(mid);
+    if (ltv > targetLTV) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return Math.ceil(high);
+}
+
 export function buildRepaymentSchedule({
   purchasePrice,
   deposit,

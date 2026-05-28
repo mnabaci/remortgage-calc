@@ -1,4 +1,5 @@
-import type { StaticStats } from "../RemortgageCalculator";
+import type { StaticStats } from "../types/mortgage";
+import StatCard from "./ui/StatCard";
 
 type Props = {
   stats: StaticStats;
@@ -10,34 +11,29 @@ export default function OverviewCards({ stats, purchasePrice }: Props) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.55)]">
-        <p className="text-sm font-medium text-slate-400">Loan amount</p>
-        <p className="mt-3 text-2xl font-semibold text-white">
-          {stats.currency(stats.loanAmount)}
-        </p>
-        <p className="mt-2 text-xs text-slate-500">{loanLTV}% starting LTV</p>
-      </div>
-      <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.55)]">
-        <p className="text-sm font-medium text-slate-400">Monthly payment</p>
-        <p className="mt-3 text-2xl font-semibold text-cyan-300">
-          {stats.currency(stats.monthlyPayment)}
-        </p>
-        <p className="mt-2 text-xs text-slate-500">Based on {stats.termYears} year term</p>
-      </div>
-      <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.55)]">
-        <p className="text-sm font-medium text-slate-400">Interest paid</p>
-        <p className="mt-3 text-2xl font-semibold text-rose-400">
-          {stats.currency(stats.totalInterestPaid)}
-        </p>
-        <p className="mt-2 text-xs text-slate-500">During fixed term</p>
-      </div>
-      <div className="bg-slate-900 p-5 rounded-3xl border border-slate-800 shadow-[0_20px_60px_-40px_rgba(15,23,42,0.55)]">
-        <p className="text-sm font-medium text-slate-400">Projected equity</p>
-        <p className="mt-3 text-2xl font-semibold text-emerald-300">
-          {stats.currency(stats.futureEquity)}
-        </p>
-        <p className="mt-2 text-xs text-slate-500">After {stats.fixTermYears} years</p>
-      </div>
+      <StatCard
+        label="Loan amount"
+        value={stats.currency(stats.loanAmount)}
+        detail={`${loanLTV}% starting LTV`}
+      />
+      <StatCard
+        label="Monthly payment"
+        value={stats.currency(stats.monthlyPayment)}
+        detail={`Based on ${stats.termYears} year term`}
+        accent="text-cyan-300"
+      />
+      <StatCard
+        label="Interest paid"
+        value={stats.currency(stats.totalInterestPaid)}
+        detail="During fixed term"
+        accent="text-rose-400"
+      />
+      <StatCard
+        label="Projected equity"
+        value={stats.currency(stats.futureEquity)}
+        detail={`After ${stats.fixTermYears} years`}
+        accent="text-emerald-300"
+      />
     </div>
   );
 }

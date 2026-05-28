@@ -3,29 +3,8 @@ import CalculatorInputPanel from "./components/CalculatorInputPanel";
 import OverviewCards from "./components/OverviewCards";
 import SummaryPanel from "./components/SummaryPanel";
 import RepaymentTable from "./components/RepaymentTable";
-
-type ScheduleEntry = {
-  period: number;
-  year: number;
-  payment: number;
-  interest: number;
-  principal: number;
-  balance: number;
-};
-
-export type StaticStats = {
-  loanAmount: number;
-  monthlyPayment: number;
-  remainingBalance: number;
-  futureLTV: number;
-  futureEquity: number;
-  principalPaid: number;
-  totalInterestPaid: number;
-  cashTopUpFor90: number;
-  fixTermYears: number;
-  termYears: number;
-  currency: (value: number) => string;
-};
+import { buildRepaymentSchedule } from "./lib/mortgage";
+import type { MortgageInput } from "./types/mortgage";
 
 export default function RemortgageCalculator() {
   const [purchasePrice, setPurchasePrice] = useState<number>(450000);
@@ -36,79 +15,20 @@ export default function RemortgageCalculator() {
   const [futureValuation, setFutureValuation] = useState<number>(442500);
   const [monthlyOverpayment, setMonthlyOverpayment] = useState<number>(0);
 
-  const currency = (value: number) =>
-    new Intl.NumberFormat("en-GB", {
-      style: "currency",
-      currency: "GBP",
-      maximumFractionDigits: 0,
-    }).format(value);
+  const inputs: MortgageInput = {
+    purchasePrice,
+    deposit,
+    termYears,
+    interestRate,
+    fixTermYears,
+    futureValuation,
+    monthlyOverpayment,
+  };
 
-  const { stats, repaymentSchedule } = useMemo(() => {
-    const loanAmount = Math.max(0, purchasePrice - deposit);
-    const monthlyInterestRate = interestRate / 100 / 12;
-    const totalMonths = termYears * 12;
-    const fixTermMonths = fixTermYears * 12;
-    const monthlyPayment =
-      (loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths)) /
-      (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
-    const paymentWithOverpayment = Math.max(0, monthlyPayment + monthlyOverpayment);
-
-    const schedule: ScheduleEntry[] = [];
-    let remainingBalance = loanAmount;
-    let totalInterestPaid = 0;
-    let totalPrincipalPaid = 0;
-
-    for (let month = 1; month <= fixTermMonths; month += 1) {
-      const interestPayment = remainingBalance * monthlyInterestRate;
-      let principalPayment = paymentWithOverpayment - interestPayment;
-      let monthlyPaymentAmount = paymentWithOverpayment;
-
-      if (principalPayment >= remainingBalance) {
-        monthlyPaymentAmount = remainingBalance + interestPayment;
-        principalPayment = remainingBalance;
-      }
-
-      const nextBalance = Math.max(0, remainingBalance - principalPayment);
-
-      schedule.push({
-        period: month,
-        year: Math.ceil(month / 12),
-        payment: monthlyPaymentAmount,
-        interest: interestPayment,
-        principal: principalPayment,
-        balance: nextBalance,
-      });
-
-      totalInterestPaid += interestPayment;
-      totalPrincipalPaid += principalPayment;
-      remainingBalance = nextBalance;
-
-      if (remainingBalance <= 0) {
-        break;
-      }
-    }
-
-    const futureLTV = futureValuation > 0 ? (remainingBalance / futureValuation) * 100 : 0;
-    const futureEquity = futureValuation - remainingBalance;
-    const cashTopUpFor90 = Math.max(0, remainingBalance - futureValuation * 0.9);
-
-    return {
-      stats: {
-        loanAmount,
-        monthlyPayment,
-        remainingBalance,
-        futureLTV,
-        futureEquity,
-        principalPaid: totalPrincipalPaid,
-        totalInterestPaid,
-        cashTopUpFor90,
-        fixTermYears,
-        termYears,
-        currency,
-      },
-      repaymentSchedule: schedule,
-    };
-  }, [purchasePrice, deposit, termYears, interestRate, fixTermYears, futureValuation, monthlyOverpayment]);
+  const { stats, schedule: repaymentSchedule } = useMemo(
+    () => buildRepaymentSchedule(inputs),
+    [purchasePrice, deposit, termYears, interestRate, fixTermYears, futureValuation, monthlyOverpayment]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 py-10 text-slate-100">
@@ -147,8 +67,7 @@ export default function RemortgageCalculator() {
             <RepaymentTable
               schedule={repaymentSchedule}
               monthlyPayment={stats.monthlyPayment}
-              fixTermYears={fixTermYears}
-              currency={currency}
+              currency={stats.currency}
             />
           </div>
         </div>

@@ -1,36 +1,18 @@
 import { useMemo, useState } from "react";
-
-type Entry = {
-  period: number;
-  year: number;
-  payment: number;
-  interest: number;
-  principal: number;
-  balance: number;
-};
-
-type YearlySummary = {
-  year: number;
-  payment: number;
-  interest: number;
-  principal: number;
-  balance: number;
-  cumulativePayment: number;
-  cumulativeInterest: number;
-  cumulativePrincipal: number;
-};
+import type { YearlySummary } from "../types/mortgage";
+import SectionCard from "./ui/SectionCard";
+import ToggleSwitch from "./ui/ToggleSwitch";
+import type { ScheduleEntry } from "../types/mortgage";
 
 type Props = {
-  schedule: Entry[];
+  schedule: ScheduleEntry[];
   monthlyPayment: number;
-  fixTermYears: number;
   currency: (value: number) => string;
 };
 
 export default function RepaymentTable({
   schedule,
   monthlyPayment,
-  fixTermYears,
   currency,
 }: Props) {
   const [showCumulative, setShowCumulative] = useState(false);
@@ -80,25 +62,17 @@ export default function RepaymentTable({
   }, [schedule]);
 
   return (
-    <div className="bg-slate-950 rounded-3xl border border-slate-800 shadow-[0_30px_90px_-55px_rgba(15,23,42,0.75)] overflow-hidden">
-      <div className="px-6 py-6 border-b border-slate-800 bg-slate-900">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-slate-400">Repayment schedule</p>
-            <h3 className="text-2xl font-semibold text-slate-100">
-              First {fixTermYears} years of amortisation
-            </h3>
-          </div>
-          <div className="rounded-3xl bg-slate-800 px-4 py-3 text-white border border-slate-700">
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
-              Fixed monthly payment
-            </p>
-            <p className="text-lg font-semibold mt-1">{currency(monthlyPayment)}</p>
-          </div>
+    <SectionCard
+      title="Repayment schedule"
+      titleSuffix={
+        <div className="rounded-3xl bg-slate-800 px-4 py-3 text-white border border-slate-700">
+          <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Fixed monthly payment</p>
+          <p className="text-lg font-semibold mt-1">{currency(monthlyPayment)}</p>
         </div>
-      </div>
-
-      <div className="max-h-[520px] overflow-x-auto bg-slate-950">
+      }
+      className="overflow-hidden"
+    >
+      <div className="max-h-[520px] overflow-x-auto bg-slate-950 rounded-3xl border border-slate-800">
         <table className="min-w-full border-separate border-spacing-0 text-left text-sm">
           <thead className="bg-slate-900 text-slate-100">
             <tr>
@@ -152,15 +126,11 @@ export default function RepaymentTable({
               Yearly breakdown of payments, interest, principal and remaining balance.
             </p>
           </div>
-          <label className="inline-flex items-center gap-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-slate-100 shadow-sm ring-1 ring-slate-800 whitespace-nowrap">
-            <input
-              type="checkbox"
-              checked={showCumulative}
-              onChange={() => setShowCumulative((value) => !value)}
-              className="h-5 w-5 rounded border-slate-700 bg-slate-950 text-cyan-500 shadow-sm focus:ring-cyan-400"
-            />
-            <span>{showCumulative ? "Cumulative totals" : "Show cumulative"}</span>
-          </label>
+          <ToggleSwitch
+            label={showCumulative ? "Cumulative totals" : "Yearly totals"}
+            checked={showCumulative}
+            onChange={setShowCumulative}
+          />
         </div>
 
         <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-sm">
@@ -194,6 +164,6 @@ export default function RepaymentTable({
           </table>
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 }

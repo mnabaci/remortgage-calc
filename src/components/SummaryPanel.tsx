@@ -52,9 +52,11 @@ export default function SummaryPanel({
     <SectionCard
       title="Fixed rate position"
       titleSuffix={
-        <div className="rounded-3xl bg-slate-900/90 px-5 py-4 text-right border border-slate-800">
-          <p className="text-xs uppercase text-slate-500">Projected LTV</p>
-          <p className={`text-4xl font-bold ${ltvClass}`}>{stats.futureLTV.toFixed(1)}%</p>
+        <div className="rounded-3xl bg-slate-900/90 px-4 py-2 border border-slate-800">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-[11px] uppercase tracking-[0.25em] text-slate-500">Projected LTV</p>
+            <p className={`text-3xl font-bold ${ltvClass}`}>{stats.futureLTV.toFixed(1)}%</p>
+          </div>
         </div>
       }
     >

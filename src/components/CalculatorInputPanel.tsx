@@ -37,7 +37,7 @@ export default function CalculatorInputPanel({
 }: Props) {
   return (
     <SectionCard title="Mortgage inputs" className="lg:col-span-4">
-      <div className="space-y-5">
+      <div className="space-y-4">
         <InputField
           label="Purchase price"
           value={purchasePrice}

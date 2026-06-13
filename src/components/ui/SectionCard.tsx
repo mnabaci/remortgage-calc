@@ -21,7 +21,7 @@ export default function SectionCard({
         </div>
         {titleSuffix ? <div>{titleSuffix}</div> : null}
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-4 print:p-3">{children}</div>
     </section>
   );
 }

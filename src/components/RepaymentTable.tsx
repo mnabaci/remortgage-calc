@@ -20,6 +20,8 @@ export default function RepaymentTable({
   const totalInterest = schedule.reduce((sum, row) => sum + row.interest, 0);
   const totalPrincipal = schedule.reduce((sum, row) => sum + row.principal, 0);
 
+  const totalsModeLabel = showCumulative ? "Cumulative totals" : "Yearly totals";
+
   const yearlySummaries: YearlySummary[] = useMemo(() => {
     const yearlyMap = schedule.reduce((map, row) => {
       const existing = map.get(row.year);
@@ -65,8 +67,8 @@ export default function RepaymentTable({
     <SectionCard
       title="Repayment schedule"
       titleSuffix={
-        <div className="rounded-3xl bg-slate-800 px-4 py-2 border border-slate-700">
-          <div className="flex items-center justify-between gap-4 text-white">
+        <div className="rounded-3xl bg-slate-800 px-4 py-2 border border-slate-700 text-white">
+          <div className="flex items-center justify-between gap-4">
             <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Fixed monthly payment</p>
             <p className="text-lg font-semibold">{currency(monthlyPayment)}</p>
           </div>
@@ -101,7 +103,7 @@ export default function RepaymentTable({
         </table>
       </div>
 
-      <div className="flex flex-col gap-4 p-6 border-t border-slate-800 bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 p-5 border-t border-slate-800 bg-slate-900 sm:flex-row sm:items-center sm:justify-between print:p-4">
         <div>
           <p className="text-sm text-slate-400">Total paid during fixed term</p>
           <p className="mt-1 text-xl font-semibold text-slate-100">
@@ -120,23 +122,26 @@ export default function RepaymentTable({
         </div>
       </div>
 
-      <div className="border-t border-slate-800 bg-slate-950 p-6">
+      <div className="border-t border-slate-800 bg-slate-950 p-5 print:p-4">
         <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-slate-200">Yearly totals</p>
+            <p className="text-sm font-semibold text-slate-200">{totalsModeLabel}</p>
             <p className="mt-1 text-xs text-slate-400">
-              Yearly breakdown of payments, interest, principal and remaining balance.
+              Breakdown of payments, interest, principal and remaining balance.
             </p>
           </div>
-          <ToggleSwitch
-            label={showCumulative ? "Cumulative totals" : "Yearly totals"}
-            checked={showCumulative}
-            onChange={setShowCumulative}
-          />
+          <div className="print:hidden flex items-center gap-3 rounded-3xl bg-slate-900/90 px-4 py-2 border border-slate-800">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500">View mode</p>
+            <ToggleSwitch
+              label={showCumulative ? "Cumulative" : "Yearly"}
+              checked={showCumulative}
+              onChange={setShowCumulative}
+            />
+          </div>
         </div>
 
         <div className="overflow-x-auto rounded-3xl border border-slate-800 bg-slate-900 shadow-sm">
-          <table className="min-w-full text-left text-sm">
+          <table className="min-w-full text-left text-sm print-table">
             <thead className="bg-slate-950 text-slate-100">
               <tr>
                 <th className="px-5 py-4">Year</th>
